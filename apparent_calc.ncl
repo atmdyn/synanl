@@ -1,6 +1,6 @@
 ; ------------------------------------------------ ;
 ; Created on  Thu Jan 02  18:37:01 2020
-; @author : Hyeong-Gyu Kim.
+; @author : Joowan Kim, Hyeong-Gyu Kim. Hyeon-Seok Do
 ;
 ;-- Description
 ;  - Function code for computing Q1(apparent heat source) and Q2(apparent moisture sink)
@@ -9,23 +9,68 @@
 ;  - Note! You must set opt@prs_unit
 ;    ex) opt@prs_unit = "hPa"
 ;        opt@prs_unit = "Pa"
+;
+;
+;-- Nomenclature
+;  - U, V     : zonal, meridional wind components [m/s]
+;  - q        : specific humidity                 [g/kg]
+;  - T        : temperature                       [K] or [C]
+;  - W(omega) : vertical velocity                 [Pa/s]
+;  - opt      : set to True if pressure units is "hPa" (opt@prs_unit = "hPa)
 ; 
+;
+;-- Output
+;  - Q1 : Apparent heat source   [J/kg/s]
+;  - Q2 : Apparent moisture sink [J/kg/s]
+;   Q1 = Cp*(dTdt + Tadv + Tadv_p)
+;   Q2 = -L*(dqdt + qadv + qadv_p)
+;
+;
 ;-- Update
 ;  - 2020-01-02 : Maked by ADLab
 ;
+;
 ;-- Reference
-;  - Yanai et al., (1973)
+;  - Yanai et al., 1973:
+;   Determination of bulk properties of tropical cloud clusters from 
+;   large-scale heat and moisture budgets. Journal of the Atmospheric 
+;   Sciences, 30(4), 611-627.
+;   https://doi.org/10.1175/1520-0469(1973)030<0611:DOBPOT>2.0.CO;2
+;
 ;  - Lee et al., (2008)
-;  - Fueglistaler et al., (2009)
+;   Lee et al., 2009:
+;   Heavy Rainfall Events Lasting 18 Days from July 31 to August 17, 
+;   1998, over Korea. J. Meteorol. Soc. Japan, 86, 313–333.
+;   https://doi.org/10.2151/jmsj.86.313
+;
+;  - Fueglistaler et al., 2009:
+;   The diabatic heat budget of the upper troposphere and lower/mid 
+;   stratosphere in ECMWF reanalyses. Q. J. R. Meteorol. Soc., 135, 21–37
+;   https://doi.org/10.1002/qj.361
+;
+;
+;-- Further Reading:
+;  - https://renqlsysu.github.io/2019/02/01/apparent_heat_source/
+;
+;  - Yanai, M. (1961): 
+;   A detailed analysis of typhoon formation.
+;   J. Meteor. Soc. Japan , 39 , 187��214
+;   https://www.jstage.jst.go.jp/article/jmsj1923/39/4/39_4_187/_pdf
+;
+;  - Yanai, M and T.Tomita (1998):
+;   https://pdfs.semanticscholar.org/fb57/a6a59cc4a684194b5e622ea6f875d0b4439a.pdf
 ; ------------------------------------------------ ;
 
 ; Calculate apparent heat source (Q1) /*{{{*/
 undef("apparent_heat_source") 
-function apparent_heat_source(T[*][*][*][*]:numeric, \
-                              U[*][*][*][*]:numeric, \ 
-                              V[*][*][*][*]:numeric, \
-                              W[*][*][*][*]:numeric, \ 
+function apparent_heat_source(T[*][*][*][*]:numeric, \  ; Temperature     [K]
+                              U[*][*][*][*]:numeric, \  ; Zonal wind      [m/s]
+                              V[*][*][*][*]:numeric, \  ; Meridional wind [m/s]
+                              W[*][*][*][*]:numeric, \  ; Vertical wind   [Pa/s]
                                         opt:logical)
+local a, R, cp, k, pi, d2r, name_tim, name_prs, name_lat, name_lon, tim, prs, \
+      lat, lon, units, unit, dTdt, dTdx, dTdy, dTdp, dx, dy, logp, Tadv_x,    \
+      Tadv_y, Tadv, Tadv_p, Q1
 begin
     ; Set constant variable
     a   = 6.37122e06        ; Radius of the earth                 [m]
@@ -104,15 +149,18 @@ end ; /*}}}*/
 
 ; Calculate apparent moisture sink (Q2) /*{{{*/
 undef("apparent_moisture_sink") 
-function apparent_moisture_sink(q[*][*][*][*]:numeric, \
-                                U[*][*][*][*]:numeric, \ 
-                                V[*][*][*][*]:numeric, \
-                                W[*][*][*][*]:numeric, \ 
+function apparent_moisture_sink(q[*][*][*][*]:numeric, \  ; Specific humidity [kg/kg]
+                                U[*][*][*][*]:numeric, \  ; Zonal wind        [m/s]  
+                                V[*][*][*][*]:numeric, \  ; Meridional wind   [m/s]
+                                W[*][*][*][*]:numeric, \  ; Vertical wind     [Pa/s] 
                                           opt:logical)
+local a, L, pi, d2r, name_tim, name_prs, name_lat, name_lon, tim, prs, lat, lon, \
+      units, unit, dqdt, dqdx, dqdy, dqdp, dx, dy, logp, qadv_x, qadv_y, qadv,   \
+      qadv_p, Q2
 begin
     ; Set constant variable
-    a   = 6.37122e06        ; Radius of the earth          [m]
-    L   = 2.501e6           ; Latent heat of vaporization  [J/kg]
+    a   = 6.37122e06        ; Radius of the earth                  [m]
+    L   = 2.501e6           ; Latent heat of vaporization at 273 K [J/kg]
     pi  = 4*atan(1.)        ; = 3.141592
     d2r = pi/180.           ; Degree to radian
 

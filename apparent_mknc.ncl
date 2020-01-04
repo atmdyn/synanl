@@ -1,6 +1,6 @@
 ; ------------------------------------------------ ;
 ; Created on  Thu Jan 02  18:37:01 2020
-; @author : Hyeong-Gyu Kim.
+; @author : Joowan Kim, Hyeong-Gyu Kim. Hyeon-Seok Do
 ;
 ;-- Description
 ;  - Calculate Q1(apparent heat source) and Q2(apparent moisture sink)
@@ -11,14 +11,10 @@
 ;    ex) opt@prs_unit = "hPa"
 ;        opt@prs_unit = "Pa"
 ;  - You can run this code in Rossby server.
+;
 ; 
 ;-- Update
 ;  - 2020-01-02 : Maked by ADLab
-;
-;-- Reference
-;  - Yanai et al., (1973)
-;  - Lee et al., (2008)
-;  - Fueglistaler et al., (2009)
 ; ------------------------------------------------ ;
 
 load "./apparent_calc.ncl"

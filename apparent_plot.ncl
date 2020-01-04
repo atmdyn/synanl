@@ -1,17 +1,13 @@
 ; ------------------------------------------------ ;
 ; Created on  Thu Jan 02  18:37:01 2020
-; @author : Hyeong-Gyu Kim.
+; @author : Joowan Kim, Hyeong-Gyu Kim. Hyeon-Seok Do
 ;
 ;-- Description
 ;  - Check about apparent result(./apparent_calc.ncl).
+;
 ; 
 ;-- Update
 ;  - 2020-01-02 : Maked by ADLab
-;
-;-- Reference
-;  - Yanai et al., (1973)
-;  - Lee et al., (2008)
-;  - Fueglistaler et al., (2009)
 ; ------------------------------------------------ ;
 
 ; Set variable
