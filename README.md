@@ -5,13 +5,13 @@ url : http://atmdyn.org/
   
   
 ## Schedule
-[x] Apparent heating / apparent moisture sink (~ 1/2)
-[ ] Geopotential tendency equation (~1/6)
-[ ] ω-equation (not decide yet)
-[ ] Q-vector
-[ ] Isentropic PV analysis
-[ ] PV inversion 
-[ ] Front genesis fuction  
+- [x] Apparent heating / apparent moisture sink (~ 1/2)
+- [ ] Geopotential tendency equation (~1/6)
+- [ ] ω-equation (not decide yet)
+- [ ] Q-vector
+- [ ] Isentropic PV analysis
+- [ ] PV inversion 
+- [ ] Front genesis fuction  
   
   
 ## URL
