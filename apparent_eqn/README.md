@@ -20,8 +20,8 @@ $ ncl apparent_plot.ncl     # Draw result
 (Q1: Apparent heat source [J/kg/s], Q2: Apparent moisture sink [K/s])
 
 <!-- refer to Emanuel (1994) pp 501 -->
-<center><img width="75%" src="/images/apparent.png" /></center>
-<center>Fig. 15.3 Averge values of Q1, Q2, adiabatic cooling, and radiative cooling during phase 3 of GATE.</center>
+<p align="center"><img width="75%" src="/images/apparent.png" /></p>
+<p>Fig. 15.3 Averge values of Q1, Q2, adiabatic cooling, and radiative cooling during phase 3 of GATE.</p>
 
   
 ## Reference
