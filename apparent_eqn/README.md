@@ -4,7 +4,28 @@ We're going to write code using NCL. Each code is described below
 * `apparent_mknc.ncl`       : Make NetCDF file using function in `apparent_calc.ncl`
 * `apparent_plot.ncl`       : Draw Q1, Q2 for verify.
 * `apparent_script_org.ncl` : Exercise script. (Not essential)  
+
+You can test above scripts in Rossby server.
+```
+$ ncl apparent_mknc.ncl     # make NetCDF file
+$ ncl apparent_plot.ncl     # Draw result
+```  
   
+## Theoretical framework
+$$
+\lim_{x\to 0}{\frac{e^x-1}{2x}}
+\overset{\left[\frac{0}{0}\right]}{\underset{\mathrm{H}}{=}}
+\lim_{x\to 0}{\frac{e^x}{2}}={\frac{1}{2}}
+$$
+
+Fueglistaler et al., (2009) - QJR
+Lee et al., (2008) - JMSJ
+
+Q1 : Apparent heat source   [J/kg/s]  
+Q2 : Apparent moisture sink [K/s]  
+
+![apparent_reuslt](/images/apparent.png)   <!-- refer to Emanuel (1994) pp 501 -->
+
   
 ## Reference
 * Yanai, M., Esbensen, S., & Chu, J. H. (1973). Determination of bulk properties of tropical cloud clusters from large-scale heat and moisture budgets. Journal of the Atmospheric Sciences, 30(4), 611-627. [link](https://journals.ametsoc.org/doi/abs/10.1175/1520-0469(1973)030%3C0611:DOBPOT%3E2.0.CO;2) 
