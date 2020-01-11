@@ -14,14 +14,13 @@ $ ncl apparent_plot.ncl     # Draw result
 ## Theoretical framework
 * Fueglistaler et al., (2009) - QJR  
 ![Apparent_heat_source](/images/apparent_eq1.png)  
-> <p align="center"><img width="75%" src="/images/apparent.png" /></p>
   
 * Lee et al., (2008) - JMSJ  
 ![Apparent_moisgure_sink](/images/apparent_eq2.png)  
 (Q1: Apparent heat source [J/kg/s], Q2: Apparent moisture sink [K/s])
 
 <!-- refer to Emanuel (1994) pp 501 -->
-<p align="center"><img width="75%" src="/images/apparent.png" /></p>
+<center><img width="75%" src="/images/apparent.png" /></center>
 <center>Fig. 15.3 Averge values of Q1, Q2, adiabatic cooling, and radiative cooling during phase 3 of GATE.</center>
 
   
