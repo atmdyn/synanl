@@ -12,18 +12,16 @@ $ ncl apparent_plot.ncl     # Draw result
 ```  
   
 ## Theoretical framework
-$$
-\lim_{x\to 0}{\frac{e^x-1}{2x}}
-\overset{\left[\frac{0}{0}\right]}{\underset{\mathrm{H}}{=}}
-\lim_{x\to 0}{\frac{e^x}{2}}={\frac{1}{2}}
-$$
+* Fueglistaler et al., (2009) - QJR
+![Apparent_heat_source](http://www.sciweavers.org/tex2img.php?eq=%5Cfrac%20%7B%20%5Cpartial%20T%20%7D%7B%20%5Cpartial%20t%20%7D%20%5Cquad%20%2B%5Cquad%20v%5Ccdot%20gradT%5Cquad%20-%5Cquad%20%5Comega%20%5Cleft%28%20%5Cfrac%20%7B%20%5Ckappa%20T%20%7D%7B%20p%20%7D%20-%5Cfrac%20%7B%20%5Cpartial%20T%20%7D%7B%20%5Cpartial%20p%20%7D%20%20%5Cright%29%20%5Cquad%20%3D%5Cquad%20%5Cfrac%20%7B%20Q%20%7D%7B%20%7B%20c%20%7D_%7B%20p%20%7D%20%7D%20&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
 
-Fueglistaler et al., (2009) - QJR
-Lee et al., (2008) - JMSJ
+* Lee et al., (2008) - JMSJ
+![Apparent_moisgure_sink]()
 
-Q1 : Apparent heat source   [J/kg/s]  
-Q2 : Apparent moisture sink [K/s]  
 
+(Q1: Apparent heat source [J/kg/s], Q2: Apparent moisture sink [K/s])
+
+<p align="center"><img width="50%" src="/images/apparent.png" /></p>
 ![apparent_reuslt](/images/apparent.png)   <!-- refer to Emanuel (1994) pp 501 -->
 
   
