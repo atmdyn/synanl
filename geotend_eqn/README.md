@@ -8,15 +8,17 @@ SOR(Successive Over Relaxaion) 방법론은 평형 상태의 방정식 해를 �
 
 예를 들어 다음의 푸아송 방정식을 가정하여 보자. 
   
-![equation](https://latex.codecogs.com/gif.latex?\large&space;{&space;\partial&space;u&space;}{&space;\partial&space;x&space;}&space;\quad&space;&plus;\quad&space;\frac&space;{&space;\partial&space;u&space;}{&space;\partial&space;y&space;}&space;\quad&space;=\quad&space;f(x,y))  
+![equation](/images/geotend1.png)  
 
 푸아송 방정식이 평형 상태에 도달하게 되면 확산이 없어지므로 
-![equation](https://latex.codecogs.com/gif.latex?\large&space;f(x,y)&space;=&space;0)
-
+![equation](https://latex.codecogs.com/gif.latex?\inline&space;f(x,y)&space;=&space;0)
 이 되며, 결과적으로 라플라스 방정식의 해를 구하게 된다. 즉, 평형 상태의 푸아송 방정식을 푼다는 것은, 라플라스 방정식의 해를 얻는 것과 동일하며, 반복법을 이용해 라플라스 방정식의 해를 얻으면, 평형 상태의 푸아송 방정식 해를 얻을 수 있다.
 
 라플라스 방정식의 해를 구하기위해 중앙차분법을 적용하며, x, y 방향으로의 격자 크기가 동일하다고 가정하면
-![equation](https://latex.codecogs.com/gif.latex?\large&space;{&space;u&space;}_{&space;i-1,j&space;}\quad&space;&plus;\quad&space;{&space;u&space;}_{&space;i&plus;1,j&space;}\quad&space;&plus;\quad&space;{&space;u&space;}_{&space;i,j-1&space;}\quad&space;&plus;\quad&space;{&space;u&space;}_{&space;i,j&plus;1&space;}\quad&space;-\quad&space;4{&space;u&space;}_{&space;i,j&space;}\quad&space;=\quad&space;0)
+![equation](/images/geotend2.png)
+로 단순화할 수 으며, 
+![equation](/images/geotend3.png)
+
   
 ## Reference
 Alejandro Garcia - Numerical Methods for Physics-Addison-Wesley (1999)
