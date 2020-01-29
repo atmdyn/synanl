@@ -20,7 +20,7 @@ nn1 = conform(ts,n*(n+1),1)
 lap2s = -ts*nn1/(R^2)
 lap2  = shsgC(lap2s,nlon)
 
-w=gsn_open_wks("pdf","laplacian")
+w=gsn_open_wks("x11","laplacian")
 res = False
 p=gsn_csm_contour(w,lap1,res)
 p=gsn_csm_contour(w,lap2,res)

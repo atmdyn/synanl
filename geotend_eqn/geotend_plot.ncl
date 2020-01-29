@@ -32,7 +32,7 @@ X  = f->X  (1,:,:,:)
 Xxy= f->Xxy(1,:,:,:)
 
 
-wks = gsn_open_wks("pdf", "nonamed")
+wks = gsn_open_wks("x11", "nonamed")
 res = True
 
 res@cnFillOn = True
