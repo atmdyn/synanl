@@ -1,3 +1,18 @@
+; ------------------------------------------------ ;
+; Created on  Thu Jan 30  10:57:36 2020
+; @author : Joowan Kim, Hyeong-Gyu Kim, Hyeon-Seok Do
+;
+; 1. Filename : verify.ncl
+;
+; 2. Variable
+;  - Input  : result of "poisson3d.ncl"
+;             = (laplacian + (f0/N)^2*(d2/dz2))T
+;  - Output : -F (Forcing)
+;
+; 3. Description
+;  - Compute forcing for verify
+; ------------------------------------------------ ;
+
 f = addfile("./output.nc", "r")
 s = f->solution
 

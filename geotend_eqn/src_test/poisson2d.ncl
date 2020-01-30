@@ -1,6 +1,6 @@
 ; ------------------------------------------------ ;
 ; Created on  Thu Jan 30  11:01:24 2020
-; @author : Hyeong-Gyu Kim.
+; @author : Joowan Kim, Hyeong-Gyu Kim. Hyeon-Seok Do
 ;
 ; 3D Poisson's equation solver (test version)
 ; 1. Filename : poisson3d.ncl
