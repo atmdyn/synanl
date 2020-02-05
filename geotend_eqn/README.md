@@ -1,5 +1,11 @@
 ## Code explanation
-* Making Tendency Term (dZ/dt) (working on it...)
+* `src_test` : Test source code in 3d Poisson's equation
+* `geotend_eq.ncl` : Solve geotendency equation
+* `geotend_plot.ncl` : Verify `geotend_eq.ncl` code
+
+
+## Working on it...
+* Making Tendency Term (dZ/dt)
 * Studying SOR method  
   
   
@@ -24,5 +30,7 @@ SOR(Successive Over Relaxaion) 방법론은 주어진 방정식을 반복적으�
   
 로 단순화할 수 으며, 오메가의 값이 1일때 가우스-자이델 방법이, 1보다 클 경우에는 SOR 방법이 적용된다. 
   
+
 ## Reference
 Alejandro Garcia - Numerical Methods for Physics-Addison-Wesley (1999)
+
