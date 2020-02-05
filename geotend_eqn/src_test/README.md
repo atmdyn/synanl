@@ -17,16 +17,16 @@ $ ncl verify_poisson3d.ncl   # for verify
 ## How to solve Poisson 3d equation?
 X, Y 축에 대해서는 구면 조화 방법을, Z 축에 대해서는 SOR 방법을 이용해 계산한다. 여기서 풀고자하는 3차원 푸아송 방정식은 다음과 같다.  
 <!-- 3D Poisson's equation -->
-<!-- \frac { dT }{ dt } ={ \triangledown  }^{ 2 }+F -->
-![equation](https://latex.codecogs.com/gif.latex?\frac&space;{&space;dT&space;}{&space;dt&space;}&space;={&space;\triangledown&space;}^{&space;2&space;}&plus;F)  
-여기서 F는 강제력을, T는 온도를 의미한다. 위의 수식에서 차분법을 적용하면
-
+<!-- \frac { dT }{ dt } ={ \triangledown  }^{ 2 }T+F -->
+![equation](https://latex.codecogs.com/gif.latex?\frac&space;{&space;dT&space;}{&space;dt&space;}&space;={&space;\triangledown&space;}^{&space;2&space;}T&plus;F)  
+여기서 F는 강제력을, T는 온도를 의미한다. 위의 수식에서 차분법을 적용하면  
+  
 <!-- 시간 차분을 적용한 방정식 -->
 <!-- \frac { { T }_{ i+1 }-{ T }_{ i } }{ \Delta t } ={ \triangledown  }^{ 2 }+\quad F -->
-![equation](https://latex.codecogs.com/gif.latex?\frac&space;{&space;{&space;T&space;}_{&space;i&plus;1&space;}-{&space;T&space;}_{&space;i&space;}&space;}{&space;\Delta&space;t&space;}&space;={&space;\triangledown&space;}^{&space;2&space;}&plus;\quad&space;F)  
+![equation](https://latex.codecogs.com/gif.latex?\frac&space;{&space;{&space;T&space;}_{&space;i&plus;1&space;}-{&space;T&space;}_{&space;i&space;}&space;}{&space;\Delta&space;t&space;}&space;={&space;\triangledown&space;}^{&space;2&space;}T&plus;\quad&space;F)  
 
 <!-- { T }_{ i+1 }\quad =\quad { T }_{ i }\quad +\quad \Delta t\quad \left( { \nabla  }^{ 2 }{ T }_{ i }\quad +\quad F \right) -->
-![equation](https://latex.codecogs.com/gif.latex?{&space;T&space;}_{&space;i&plus;1&space;}\quad&space;=\quad&space;{&space;T&space;}_{&space;i&space;}\quad&space;&plus;\quad&space;\Delta&space;t\quad&space;\left(&space;{&space;\nabla&space;}^{&space;2&space;}{&space;T&space;}_{&space;i&space;}\quad&space;&plus;\quad&space;F&space;\right))
+![equation](https://latex.codecogs.com/gif.latex?{&space;T&space;}_{&space;i&plus;1&space;}\quad&space;=\quad&space;{&space;T&space;}_{&space;i&space;}\quad&space;&plus;\quad&space;\Delta&space;t\quad&space;\left(&space;{&space;\nabla&space;}^{&space;2&space;}{&space;T&space;}_{&space;i&space;}\quad&space;&plus;\quad&space;F&space;\right))  
 의 수식을 얻을 수 있다. 여기서 라플라스 연산자에 대한 항에 대해 구면조화를 적용하면(Ref. equation 15 참고),  
 
 <!-- 라플라스 연산자 항에 대한 결과 -->
