@@ -1,4 +1,4 @@
-a = addfile("./run_output.nc", "r")
+a = addfile("./geotend.nc", "r")
 f = a->forcing
 s = a->solution
 lat = ispan(-90,  90, 1)    ; 181

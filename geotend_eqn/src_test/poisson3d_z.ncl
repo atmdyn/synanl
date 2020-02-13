@@ -28,16 +28,16 @@
 
 ;-- Set variables
 ; Relaxation coefficient : relax = (f0/N)^2*(2*dt/dz^2)
-relax = 0.4    ; = 1 : normal relaxation
+relax = 0.004    ; = 1 : normal relaxation
                ; > 1 : over relaxationa
 resid = 1.e-4  ; critical value
 f0 = 1.e-4
-N  = 1.e-2
+N  = 1.e-1
 
 ; Coordinate
-lev = ispan(  0,  20, 1)   ; [km]
-lat = ispan(-90,  90, 1)
-lon = ispan(  0, 359, 1)
+lev = ispan(  0,  20, 1)    ; [km]
+lat = ispan(-90,  90, 1)    ; 181
+lon = ispan(  0, 359, 1)    ; 360
 nlon = dimsizes(lon)
 
 ; Wavelength
@@ -50,7 +50,7 @@ R = get_sphere_radius()    ; <- update (2020.01.29)
 
 
 ;-- Forcing Part
-f1 = new((/21,181,360/), "float")
+f1 = new((/21,dimsizes(lat),dimsizes(lon)/), "float")
 hgt3 = conform(f1, lev, 0)
 lat3 = conform(f1, lat, 1)
 lon3 = conform(f1, lon, 2)
@@ -60,9 +60,9 @@ lon3 = conform(f1, lon, 2)
 A = 10./86400.   ; amplitude 10 [K/day]
 ; 1. One cell forcing
 ;  -1. Bottom forcing
-f1 =  A* exp(- ( ( lat3      /Ly )^2 \
-               + ((lon3-180) /Lx )^2 \    ; 90
-               + ((hgt3    ) /Lz )^2 ) )
+; f1 =  A* exp(- ( ( lat3      /Ly )^2 \
+;                + ((lon3-180) /Lx )^2 \    ; 90
+;                + ((hgt3    ) /Lz )^2 ) )
 ;  -2. Z- Center forcing
 ; f1 =  A* exp(- ( ( lat3      /Ly )^2 \
 ;                + ((lon3-180) /Lx )^2 \    ; 90
@@ -84,12 +84,12 @@ f1 =  A* exp(- ( ( lat3      /Ly )^2 \
 ;                + ((lon3-270)/Lx )^2 \    ; 270
 ;                + ((hgt3   ) /Lz )^2 ) ) + f1
 ;  -3. SN 2 forcing 
-; f1 =  A* exp(- ( ((lat3-90) /Ly )^2 \
-;                + ((lon3-180) /Lx )^2 \    ; 90
-;                + ((hgt3   ) /Lz )^2 ) )
-; f1 = -A* exp(- ( ((lat3+90) /Ly )^2 \
-;                + ((lon3-180) /Lx )^2 \    ; 270
-;                + ((hgt3   ) /Lz )^2 ) ) + f1
+f1 =  A* exp(- ( ((lat3-90)  /Ly )^2 \
+               + ((hgt3   )  /Lz )^2 ) )
+               ; + ((lon3-180) /Lx )^2 \    ; 90
+f1 = -A* exp(- ( ((lat3+90)  /Ly )^2 \
+               + ((hgt3   )  /Lz )^2 ) ) + f1
+               ; + ((lon3-180) /Lx )^2 \    ; 270
 ;=================================================== /*}}}*/
 b_lm = shaeC(f1)   ; [2] x [21] x [181] x [181]
 
