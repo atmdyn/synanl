@@ -41,13 +41,16 @@ begin
     ; Define dt instead of relaxation coefficient for convenience
     dt    = 1.e9  ; delta tiem                 [s]
     thres = 1.e-8 ; threshold for iteration
-    f0    = 1.e-4 ; Coriolis parameter         [/s]
+    ; f0    = 1.e-4 ; Coriolis parameter         [/s]
     g     = 9.8   ; gravitational acceleration [m/s2]
     R     = 287.  ; Gas constant               [J/kg/K]
     Cp    = 1005. ; Specific heat capacity     [J/kg/K]
     ; Earth radius [m]
     ; a     = get_sphere_radius()    ; <- update (2020.01.29)
     a     = 6371220.   ; [m]
+    OMG   = 7.2921e-5
+    pi    = 4*atan(1.)
+    d2r   = pi/180.
 
     ;-- Get coordinate
     name_lev = F!0
@@ -59,6 +62,8 @@ begin
     nlev = dimsizes(lev)
     nlat = dimsizes(lat)
     nlon = dimsizes(lon)
+    f    = 2*OMG*sin(lat*d2r) ; Coriolis parameter         [/s]
+    f2   = conform_dims((/nlat, nlon/), f*f, 0)
 
     top = new((/nlat, nlon/), typeof(F))
     top = 0.
@@ -68,8 +73,18 @@ begin
     if (isatt(opt, "thres")) then thres = opt@thres end if    
     if (isatt(opt,    "f0")) then f0    = opt@f0    end if    
     if (isatt(opt,   "lev")) then lev   = opt@lev   end if    
-    if (isatt(opt, "upper_bound")) then top = opt@upper_bound end if    
-    if (isatt(opt, "lower_bound")) then bot = opt@lower_bound end if    
+    if (isatt(opt, "upper_bound")) then top = opt@upper_bound end if
+    if (isatt(opt, "lower_bound")) then bot = opt@lower_bound end if 
+
+    ; TODO : how to resolve corioli parameter?
+    ;   (f_00*Y_00 + f_20*Y_20) * a_lm*Y_lm = c_lm*Y_lm
+    ;   Y_20 * Y_lm = Y_(l+?)m
+    ; method 1 : Use shseC in while loop
+    ; method 2 : Found Y_(l+?)m mathmatically
+    ; For the case of `f = 2*OMG*sin(lat)`
+    ; f2_lm = shaeC(f2)
+    ; f2_00 = f2_lm(0,0,0)
+    ; f2_20 = f2_lm(0,2,0)
 
     ; Calculate N2(height) or Sigma(pressure)
     T0 = opt@T0
@@ -85,6 +100,10 @@ begin
         sig = static_stability(lev, T0, 0, 0)   ; = Sp
         sig := (R/lev)*sig
     end if  
+    print("===== Level  |  Temeprature  |  Sigma =====")
+    print(sprintf("%7.0f",lev)+" [Pa] |   "+ \
+          sprintf("%6.2f",T0)+" [K]  | "  + sig)
+    print("===========================================")
 
     ;-- Solver Part
     dlev =   lev(1:nlev-1) - lev(0:nlev-2)         ; =dp or dz
@@ -109,16 +128,32 @@ begin
     do while (err .gt. thres)
         dummy = a_lm
         do k = 1, dimsizes(lev)-2   ; omit boundary
-            relax1 = (f0^2)*dt/(sig(k  )*dlev(k  )*0.5*(lev(k+1)-lev(k-1)))
-            relax2 = (f0^2)*dt/(sig(k-1)*dlev(k-1)*0.5*(lev(k+1)-lev(k-1)))
+            relax1 = dt/(sig(k  )*dlev(k  )*0.5*(lev(k+1)-lev(k-1)))
+            relax2 = dt/(sig(k-1)*dlev(k-1)*0.5*(lev(k+1)-lev(k-1)))
+
+            ; laps: Horizontal laplacian
             laps = (nn1/a^2)*dt*a_lm(:,k,:,:)
             laps(:,0,0) = 0.        ; No mean value for laplacian
-            a_lm(:,k,:,:) = a_lm(:,k,:,:)                          \
-                            - laps                                 \
-                            - (relax1+relax2)*a_lm(:,k,:,:)        \
-                            + relax1*a_lm(:,k+1,:,:)               \
-                            + relax2*a_lm(:,k-1,:,:)               \
-                            + dt*b_lm(:,k,:,:)
+
+            ; c_lm: Vertical laplacian
+            c_lm = - (relax1+relax2)*a_lm(:,k,:,:)        \
+                   + relax1*a_lm(:,k+1,:,:)               \
+                   + relax2*a_lm(:,k-1,:,:)
+
+            if (isatt(opt, "f0")) then ; f = f0 (constant)
+                c_lm = (f0^2)*c_lm
+            else                     ; f = f(lat)
+            ; TODO : update using convolution sum instead of 
+            ;       transfom method for speed.
+                cphy = shseC(c_lm, nlon)
+                cphy = cphy*f2
+                c_lm = shaeC(cphy)
+            end if    
+
+            a_lm(:,k,:,:) = a_lm(:,k,:,:)      \
+                            - laps             \  ; Horizontal laplacian
+                            + c_lm             \  ; Vertical laplacian
+                            + dt*b_lm(:,k,:,:)    ; Forcing
         end do    
         err = avg(abs(a_lm - dummy))
         print(err+"")
