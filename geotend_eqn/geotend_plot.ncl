@@ -11,8 +11,7 @@
 ; ------------------------------------------------ ;
 
 ; Set variable
-lev1 = 200  ; [hPa]
-lev2 = 500  ;
+lev1 = 500  ;
 cp   = 1005.  ; [J/kg/K]
 casetime = "2016070500"
 
@@ -25,11 +24,11 @@ y4m2 = y4+m2
 
 ; Read data
 f = addfile("geotend.nc", "r")
-F1 = f->F1 (1,:,:,:)
-F2 = f->F2 (1,:,:,:)
-F3 = f->F3 (1,:,:,:)
-X  = f->X  (1,:,:,:)
-Xxy= f->Xxy(1,:,:,:)
+F1 = f->F1 (:,:,:)
+F2 = f->F2 (:,:,:)
+F3 = f->F3 (:,:,:)
+X  = f->X  (:,:,:)
+sol  = f->solution  (:,:,:)
 
 
 wks = gsn_open_wks("x11", "nonamed")
@@ -38,15 +37,13 @@ res = True
 res@cnFillOn = True
 res@gsnAddCyclic = False
 
-res@mpMinLatF = 20
-res@mpMaxLatF = 50
-res@mpMinLonF = 100
-res@mpMaxLonF = 150
+; res@mpMinLatF = 20
+; res@mpMaxLatF = 50
+; res@mpMinLonF = 100
+; res@mpMaxLonF = 150
 ;res@cnLevelSelectionMode = "ExplicitLevels"
 ;res@cnLevels = ispan(-30,30,1)
 
-res@gsnLeftString = "Xxy("+lev1+"hPa)"
-plt = gsn_csm_contour_map(wks, Xxy({lev1},:,:), res)
 res@gsnLeftString = "X ("+lev1+"hPa)"
 plt = gsn_csm_contour_map(wks, X({lev1},:,:), res)
 res@gsnLeftString = "F1("+lev1+"hPa)"
@@ -56,3 +53,5 @@ res@gsnLeftString = "F2("+lev1+"hPa)"
 plt = gsn_csm_contour_map(wks, F2({lev1},:,:), res)
 res@gsnLeftString = "F3("+lev1+"hPa)"
 plt = gsn_csm_contour_map(wks, F3({lev1},:,:), res)
+res@gsnLeftString = "solution("+lev1+"hPa)"
+plt = gsn_csm_contour_map(wks, sol({lev1},:,:), res)
