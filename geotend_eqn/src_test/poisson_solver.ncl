@@ -16,6 +16,7 @@ function poisson_solver(F[*][*][*]:numeric, opt:logical)
 ;
 ;  - Option
 ;    opt@T0    = T(nprs) or T(nlev)
+;       @sig   = sig <- constant value
 ;       @lev   = vertical coordinate       (default: level from F )
 ;       @lev_units = "hPa", "Pa", "m"
 ;       @dt    = time [s] (emprical value) (default: 1.e9  [s]  )
@@ -39,9 +40,9 @@ function poisson_solver(F[*][*][*]:numeric, opt:logical)
 begin
     ;-- Set variables
     ; Define dt instead of relaxation coefficient for convenience
-    dt    = 1.e9  ; delta tiem                 [s]
+    dt    = 1.e9  ; delta time                 [s]
     thres = 1.e-8 ; threshold for iteration
-    ; f0    = 1.e-4 ; Coriolis parameter         [/s]
+    f0    = 1.e-4 ; Coriolis parameter         [/s]
     g     = 9.8   ; gravitational acceleration [m/s2]
     R     = 287.  ; Gas constant               [J/kg/K]
     Cp    = 1005. ; Specific heat capacity     [J/kg/K]
@@ -52,6 +53,7 @@ begin
     pi    = 4*atan(1.)
     d2r   = pi/180.
 
+    ; TODO: Add if loop for no dimension info
     ;-- Get coordinate
     name_lev = F!0
     name_lat = F!1
@@ -87,23 +89,30 @@ begin
     ; f2_20 = f2_lm(0,2,0)
 
     ; Calculate N2(height) or Sigma(pressure)
-    T0 = opt@T0
-    T2B = False
-    if (opt@lev_units .eq. "m") then ; <= height coordinate
-        ; True: Top-to-Bottom
-        if (lev(0) .gt. lev(1)) then T2B = True end if    
-        dTdz = center_finite_diff(T0, lev, False, 0)
-        sig = (g/T0)*( dTdz + (g/Cp) )  ; = N2 (ref. MAD Andrew 122p)
-    else ; <= pressure coordinate
-        if (lev(1) .gt. lev(0)) then T2B = True end if    
-        if (opt@lev_units .eq. "hPa") then lev := lev * 100. end if    
-        sig = static_stability(lev, T0, 0, 0)   ; = Sp
-        sig := (R/lev)*sig
-    end if  
-    print("===== Level  |  Temeprature  |  Sigma =====")
-    print(sprintf("%7.0f",lev)+" [Pa] |   "+ \
-          sprintf("%6.2f",T0)+" [K]  | "  + sig)
-    print("===========================================")
+    T2B = False     ; True: Top-to-Bottom
+    if (isatt(opt, "T0")) then
+        T0 = opt@T0
+        if (opt@lev_units .eq. "m") then ; <= height coordinate
+            if (lev(0) .gt. lev(1)) then T2B = True end if    
+            dTdz = center_finite_diff(T0, lev, False, 0)
+            sig = (g/T0)*( dTdz + (g/Cp) )  ; = N2 (ref. MAD Andrew 122p)
+        else ; <= pressure coordinate
+            if (lev(1) .gt. lev(0)) then T2B = True end if    
+            if (opt@lev_units .eq. "hPa") then lev := lev * 100. end if 
+            sig = static_stability(lev, T0, 0, 0)   ; = Sp
+            sig := (R/lev)*sig  ; σ ≡ −(RT0/p)(dlnθ/dp) (ref. Holton 4th 150p)
+        end if  
+        print("===== Level  |  Temeprature  |  Sigma =====")
+        print(sprintf("%7.0f",lev)+" [Pa] |   "+ \
+              sprintf("%6.2f",T0)+" [K]  | "  + sig +" [m2 Pa-2 s-2]")
+        print("===========================================")
+    else    ; TODO: classify "m" and "Pa"
+        sig = conform(lev, opt@sig, 0)
+        print("===== Level  |  Sigma =====")
+        print(sprintf("%7.0f",lev)+" [Pa] | "+ sig +" [m2 Pa-2 s-2]")
+        print("===========================================")
+    end if    
+    
 
     ;-- Solver Part
     dlev =   lev(1:nlev-1) - lev(0:nlev-2)         ; =dp or dz
@@ -132,7 +141,7 @@ begin
             relax2 = dt/(sig(k-1)*dlev(k-1)*0.5*(lev(k+1)-lev(k-1)))
 
             ; laps: Horizontal laplacian
-            laps = (nn1/a^2)*dt*a_lm(:,k,:,:)
+            laps = -(nn1/a^2)*dt*a_lm(:,k,:,:)
             laps(:,0,0) = 0.        ; No mean value for laplacian
 
             ; c_lm: Vertical laplacian
@@ -140,7 +149,7 @@ begin
                    + relax1*a_lm(:,k+1,:,:)               \
                    + relax2*a_lm(:,k-1,:,:)
 
-            if (isatt(opt, "f0")) then ; f = f0 (constant)
+            if (dimsizes(f0) .eq. 1) then ; f = f0 (constant)
                 c_lm = (f0^2)*c_lm
             else                     ; f = f(lat)
             ; TODO : update using convolution sum instead of 
@@ -151,9 +160,9 @@ begin
             end if    
 
             a_lm(:,k,:,:) = a_lm(:,k,:,:)      \
-                            - laps             \  ; Horizontal laplacian
+                            + laps             \  ; Horizontal laplacian
                             + c_lm             \  ; Vertical laplacian
-                            + dt*b_lm(:,k,:,:)    ; Forcing
+                            - dt*b_lm(:,k,:,:)    ; Forcing
         end do    
         err = avg(abs(a_lm - dummy))
         print(err+"")

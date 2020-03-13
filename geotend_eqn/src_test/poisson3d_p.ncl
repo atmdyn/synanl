@@ -35,7 +35,7 @@ sig = 2.5e-6   ; [m^2 / Pa^2 / s^2] holton 4th 150p
 ; sig = 5.e-6   ; [m^2 / Pa^2 / s^2] holton 4th 150p
 
 ; Coordinate
-lev = (/1000, 925, 850, 700, 500, 300, 200, 100/)*100. ; Pa
+lev = ispan(200,1000,50)*100. ; Pa
 lat = ispan(-90,  90, 1)    ; 181
 lon = ispan(  0, 359, 1)    ; 360
 nlev = dimsizes(lev)

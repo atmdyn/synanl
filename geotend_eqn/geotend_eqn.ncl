@@ -4,7 +4,7 @@ load "./src_test/poisson_solver.ncl"
 
 y4m2 = "201602"
 path = "/data2/eraint/1.5x1.5/"
-time_idx = 4
+time_idx = 6
 
 ; Read file
 ; fU = addfile(path+"Upl/"+"Upl."+y4m2+".6hr.grib", "r")
