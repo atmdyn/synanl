@@ -46,9 +46,8 @@ begin
     g     = 9.8   ; gravitational acceleration [m/s2]
     R     = 287.  ; Gas constant               [J/kg/K]
     Cp    = 1005. ; Specific heat capacity     [J/kg/K]
-    ; Earth radius [m]
     ; a     = get_sphere_radius()    ; <- update (2020.01.29)
-    a     = 6371220.   ; [m]
+    a     = 6371220.   ; Earth radius [m]
     OMG   = 7.2921e-5
     pi    = 4*atan(1.)
     d2r   = pi/180.
@@ -100,7 +99,7 @@ begin
             if (lev(1) .gt. lev(0)) then T2B = True end if    
             if (opt@lev_units .eq. "hPa") then lev := lev * 100. end if 
             sig = static_stability(lev, T0, 0, 0)   ; = Sp
-            sig := (R/lev)*sig  ; σ ≡ −(RT0/p)(dlnθ/dp) (ref. Holton 4th 150p)
+            sig := (R/lev)*sig  ; σ ≡ −(RT/p)(dlnθ/dp) (ref. Holton 4th 150p)
         end if  
         print("===== Level  |  Temeprature  |  Sigma =====")
         print(sprintf("%7.0f",lev)+" [Pa] |   "+ \

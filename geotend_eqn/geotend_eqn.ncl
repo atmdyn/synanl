@@ -1,10 +1,8 @@
 load "./src_test/poisson_solver.ncl"
 
-; Phi, J, T
-
 y4m2 = "201602"
 path = "/data2/eraint/1.5x1.5/"
-time_idx = 6
+time_idx = 7
 
 ; Read file
 ; fU = addfile(path+"Upl/"+"Upl."+y4m2+".6hr.grib", "r")
@@ -14,7 +12,7 @@ time_idx = 6
 fin  = addfile(path+"Tpl/"+"Tpl."+y4m2+".6hr.grib", "r")
 T    = fin->T_GDS0_ISBL(time_idx,{200:1000},:,:)    ; Temperature [K]
 fin  = addfile(path+"Zpl/"+"Zpl."+y4m2+".6hr.grib", "r")
-Zg   = fin->Z_GDS0_ISBL(time_idx,{200:1000},:,:)    ; Geopotential [m**2 s**-2]
+PHI  = fin->Z_GDS0_ISBL(time_idx,{200:1000},:,:)    ; Geopotential [m**2 s**-2]
 fin  = addfile(path+"PHYpl/"+"Tphy.pl."+y4m2+".nc", "r")
 J_cp = fin->Tphy(time_idx,{200:1000},:,:)/(3600.*6) ; =J/Cp [K/6hour] -> [K/s]
 ; test Q1, Q2
@@ -36,17 +34,15 @@ P   = conform(T, prs, 0)
 ; Calculate Static stability 
 ; make only zonal average for practical reason
 Tzm = dim_avg(dim_avg(T))
-sig = static_stability(prs, Tzm, 0, 0)
-sig = (R/conform(sig, prs, 0))*sig  ; sig(t,p,y)
+sp0 = static_stability(prs, Tzm, 0, 0)
+sig = (R/conform(sp0, prs, 0))*sp0  ; sig(t,p,y)
 
 ; Calculate f
 f   = 2*OMG*sin(lat*d2r)    ; Coriolis force
 f!0 = "lat"
-f&lat = lat
-f({0}) = 1.e-5          ; practical reason
-                        ; Assume! f_equator is small value.
+f&lat = lat                 ; practical reason
+f({0}) = 1.e-5              ; Assume! f_equator is small value.
 f3   = conform(T, f, 1)
-beta = 2*OMG*cos(lat*d2r)/a
 
 ; Forcing 1 : Absolute vorticity advection
 gtype = 1   ; 1 = fixed grid (default), 0 = gaussian grid
@@ -54,9 +50,9 @@ vdiff = 1   ; 1 = pressure (default),   0 = logp,
 
 ; Calculate geostrophic wind Ug, Vg
 ; Use f instead f0.
-Ug = -(1./f3)*center_finite_diff_n(Zg, a*lat*d2r, False, 1, 1)
-Vg =  (1./f3)*center_finite_diff_n(Zg, a*lon*d2r, False, 1, 2)
-; Vg = Vg/conform(Vg, cos(lat*d2r), 1)
+Ug = -(1./f3)*center_finite_diff_n(PHI, a*lat*d2r, False, 1, 1)
+Vg =  (1./f3)*center_finite_diff_n(PHI, a*lon*d2r, False, 1, 2)
+Vg = Vg/conform(Vg, cos(lat*d2r), 1)
 
 ; Calculate geostrophic vorticity
 if (gtype .eq. 1) then vo = uv2vrF(Ug, Vg)
@@ -76,14 +72,15 @@ avo_adv = avo_adv(:,::latord,:)
 F1      = f3*avo_adv
 
 ; Forcing 2 : Thickness advection 
-dphi_dp = -R*T/P    ; replace dphi_dp using temperature
-copy_VarCoords(T, dphi_dp)
+dPHI_dp = -R*T/P    ; replace dphi_dp using temperature
+copy_VarCoords(T, dPHI_dp)
 sig  = where(sig .le. 0, 1.e-7, sig)   ; Assume! remove negative sigma.
 sig3 = conform_dims(dimsizes(T), sig, (/0/))
-
+_dPHI_dp = -dPHI_dp     ; Avoid for warning
+copy_VarCoords(T, _dPHI_dp)
 temp_adv = -advect_variable(Ug(:,::latord,:), \ ; advect_variable 
                             Vg(:,::latord,:), \ ; = u*d/dx + v*d/dy
-                      -dphi_dp(:,::latord,:), \ ; Need to add minus sign
+                      _dPHI_dp(:,::latord,:), \ ; Need to add minus sign
                   gtype, longName, units, 0)
 temp_adv = temp_adv(:,::latord,:)
 F2 = ((f3^2.)/sig3)*temp_adv
@@ -92,23 +89,21 @@ if (vdiff .eq. 1) then  ; Diff in pressure
     F2 = -center_finite_diff_n(F2, prs, False, 1, 0)
 else  ; Diff in log-P (d/dp -> 1/p*d/dlogp.)
     logp = log(prs)       
-    F2 =  center_finite_diff_n(F2, logp, False, 1, 0)
-    F2 = -F2/P        ; take it back to pressure
+    F2 = -center_finite_diff_n(F2, logp, False, 1, 0)
+    F2 = F2/P        ; take it back to pressure
 end if    
 
 
 ; Forcing 3 : Heating
 J_cp@_FillValue = 0.
 delete(J_cp@_FillValue)
-F3 = ((R/P)*((f3^2.)/sig3)*J_cp)
+F3 = (R/P)*((f3^2.)/sig3)*J_cp
 if (vdiff .eq. 1) then  ; Diff in pressure
     F3 = -center_finite_diff_n(F3, prs, False, 1, 0)
 else  ; Diff in log-P (d/dp -> 1/p*d/dlogp.)
-    F3 =  center_finite_diff_n(F3, logp, False, 1, 0)
-    F3 = -F3/P          ; take it back to pressure
+    F3 = -center_finite_diff_n(F3, logp, False, 1, 0)
+    F3 = F3/P          ; take it back to pressure
 end if
-; F3@_FillValue = 0.
-; delete(F3@_FillValue)
 ;================================================================
 ; Inverse laplacian
 F = F1 + F2 + F3

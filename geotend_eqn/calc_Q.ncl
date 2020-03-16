@@ -1,6 +1,6 @@
 load "/home/gue/work/TODO/synopanal/apparent_eqn/apparent_calc.ncl"
 
-y4m2 = "201601"
+y4m2 = "201602"
 path = "/data2/eraint/1.5x1.5/"
 fin  = addfile(path+"Upl/"+"Upl."+y4m2+".6hr.grib", "r")
 U    = fin->U_GDS0_ISBL(:,{200:1000},:,:)
