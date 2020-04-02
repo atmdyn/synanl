@@ -13,38 +13,23 @@
 ; Set variable
 lev1 = 500  ;
 cp   = 1005.  ; [J/kg/K]
-y4m2 = "201602"
+y4m2 = "201601"
 
 
 ; Read data
 f1 = addfile("geotend.nc", "r")
-; f2 = addfile("geotend_fms_F2.nc", "r")
-; X  = f->X
-; sol = f->solution
-; flist = systemfunc("ls -1 geotend_*.nc")
-; f = addfiles(flist, "r")
-; ListSetType(f, "join")
-; F1  = f->F1(1,:,:,:)
-; F2  = f->F2(1,:,:,:)
-; F3  = f->F3(1,:,:,:)
-fin  = addfile("../data/fms_HS_Z.nc", "r")
-PHI  = fin->Z(0:8,{200:1000},:,:)*9.8   ; Geopotential [m**2 s**-2]
-X    = (PHI(5,:,:,:) - PHI(3,:,:,:)) / 21600. /2.
-; X    = center_finite_diff_n(PHI(::4,:,:,:), 86400., False, 1, 0)
-; X   = dim_avg_n_Wrap(f1->X (:,:,:,:),0)
-sol = dim_avg_n_Wrap(f1->solution(4:4,:,:,:),0)
-copy_VarCoords(sol, X)
-; sol2 = f2->solution(1,:,:,:)
-; sol = sol1+sol2
-; copy_VarCoords(sol1, sol)
+; X  = f1->X
+; sol = f1->solution
 
-; path = "/data2/eraint/1.5x1.5/"
-; fin  = addfile(path+"Zpl/"+"Zpl."+y4m2+".6hr.grib", "r")
-; Zg   = fin->Z_GDS0_ISBL(0:11,{200:1000},:,:)    ; Geopotential
-; dims = dimsizes(Zg)
-; Zd   = dim_avg_n_Wrap(reshape(Zg, (/3,4,dims(1),dims(2),dims(3)/)),1)
-; X   := center_finite_diff_n(Zd, 86400., False, 1, 0)
-; copy_VarCoords(Zg(0,:,:,:), X(0,:,:,:))
+path = "/data2/eraint/1.5x1.5/"
+fin  = addfile(path+"Zpl/"+"Zpl."+y4m2+".6hr.grib", "r")
+PHI  = fin->Z_GDS0_ISBL(0:2,{200:1000},:,:)    ; Geopotential [m**2 s**-2]
+X    = (PHI(2,:,:,:) - PHI(0,:,:,:)) / 21600. /2.
+; X    = center_finite_diff_n(PHI(::4,:,:,:), 21600., False, 1, 0)
+; X   = dim_avg_n_Wrap(f1->X (:,:,:,:),0)
+sol = dim_avg_n_Wrap(f1->solution(1:1,:,:,:),0)
+; X := X(1,:,:,:)
+copy_VarCoords(sol, X)
 
 
 wks = gsn_open_wks("x11", "nonamed")
@@ -53,7 +38,7 @@ res@cnFillOn = True
 res@cnLinesOn = False
 res@cnFillPalette = "amwg256"
 res@cnLevelSelectionMode = "ExplicitLevels"
-res@cnLevels = ispan(-24,24,2)*1.e-3
+res@cnLevels = ispan(-40,40,2)*1.e-3
 ; res@gsnAddCyclic = False
 
 ; res@mpMinLatF = 20

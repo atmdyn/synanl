@@ -1,17 +1,17 @@
 load "./src_test/poisson_solver.ncl"
 load "./geotend_func.ncl"
 
-dtype = "fms"   ; era(ERA-Interim), fms(FMS)
+dtype = "era"   ; era(ERA-Interim), fms(FMS)
 
 ; Read file ==================================================/*{{{*/
 ;-- Era-Interim
 if (dtype .eq. "era") then
-    y4m2 = "201602"
+    y4m2 = "201601"
     path = "/data2/eraint/1.5x1.5/"
-    fU = addfile(path+"Upl/"+"Upl."+y4m2+".6hr.grib", "r")
-    U  = fU->U_GDS0_ISBL 
-    fV = addfile(path+"Vpl/"+"Vpl."+y4m2+".6hr.grib", "r")
-    V  = fV->V_GDS0_ISBL 
+    ; fU = addfile(path+"Upl/"+"Upl."+y4m2+".6hr.grib", "r")
+    ; U  = fU->U_GDS0_ISBL 
+    ; fV = addfile(path+"Vpl/"+"Vpl."+y4m2+".6hr.grib", "r")
+    ; V  = fV->V_GDS0_ISBL 
     fin  = addfile(path+"Tpl/"+"Tpl."+y4m2+".6hr.grib", "r")
     T    = fin->T_GDS0_ISBL(0:11,{200:1000},:,:)    ; Temperature [K]
     fin  = addfile(path+"Zpl/"+"Zpl."+y4m2+".6hr.grib", "r")
@@ -48,8 +48,8 @@ dim  = dimsizes(PHI)
 ; X = center_finite_diff_n(PHId, 86400., False, 1, 0)
 ; X!0 = "days"
 ; copy_VarCoords(T(0,:,:,:), X(0,:,:,:))
-X = center_finite_diff_n(PHI, 86400., False, 1, 0)
-; X = center_finite_diff_n(PHI, 21600., False, 1, 0)
+; X = center_finite_diff_n(PHI, 86400., False, 1, 0)
+X = center_finite_diff_n(PHI, 21600., False, 1, 0)
 copy_VarCoords(T, X)
 
 F  = new(dim, "float")
@@ -63,7 +63,7 @@ copy_VarCoords(T, F3)
 solution = new(dim, "double")
 copy_VarCoords(T, solution)
 
-do tidx = 0, 9
+do tidx = 0, 2
     print("tidx : "+tidx)
     opt1 = True
     opt1@T = T(tidx,:,:,:)
@@ -75,6 +75,7 @@ do tidx = 0, 9
     delete_VarAtts(dummy, "F2")
     delete_VarAtts(dummy, "F3")
     F(tidx,:,:,:) = dummy
+    ; F(tidx,:,:,:) = F1(tidx,:,:,:)+F2(tidx,:,:,:)
 
     ; Solve equation using SOR(Successive Over Relexation) method
     opt = True
@@ -82,7 +83,8 @@ do tidx = 0, 9
     opt@lev_units = "hPa"
     opt@dt = 1.e8
     opt@f0 = 1.e-4
-    opt@thres = 1.e-10
+    ; opt@thres = 1.e-10
+    opt@thres = 1.e-5
     opt@upper_bound = 0.
     opt@lower_bound = 0.
     solution(tidx,:,:,:) = poisson_solver(F(tidx,:,:,:), opt)

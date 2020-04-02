@@ -20,7 +20,7 @@ function poisson_solver(F[*][*][*]:numeric, opt:logical)
 ;       @lev   = vertical coordinate       (default: level from F )
 ;       @lev_units = "hPa", "Pa", "m"
 ;       @dt    = time [s] (emprical value) (default: 1.e9  [s]  )
-;       @thres = threshold for iteration   (default: 1.e-8      )
+;       @thres = threshold for iteration   (default: 1.e-4      )
 ;       @f0    = Coriolis parameter        (default: 1.e-4 [s-1])
 ;       @upper_bound = Upper boundary      (default: 0)
 ;       @lower_bound = Lower boundary      (default: 0)
@@ -41,7 +41,7 @@ begin
     ;-- Set variables
     ; Define dt instead of relaxation coefficient for convenience
     dt    = 1.e9  ; delta time                 [s]
-    thres = 1.e-8 ; threshold for iteration
+    thres = 1.e-4 ; threshold for iteration
     f0    = 1.e-4 ; Coriolis parameter         [/s]
     g     = 9.8   ; gravitational acceleration [m/s2]
     R     = 287.  ; Gas constant               [J/kg/K]
@@ -76,6 +76,7 @@ begin
     if (isatt(opt,   "lev")) then lev   = opt@lev   end if    
     if (isatt(opt, "upper_bound")) then top = opt@upper_bound end if
     if (isatt(opt, "lower_bound")) then bot = opt@lower_bound end if 
+    if (isatt(opt, "drel_err")) then bot = opt@lower_bound end if 
 
     ; TODO : how to resolve corioli parameter?
     ;   (f_00*Y_00 + f_20*Y_20) * a_lm*Y_lm = c_lm*Y_lm
@@ -133,7 +134,7 @@ begin
 
     err = 1.d30
     begTime = get_cpu_time()
-    do while (err .gt. thres)
+    do loop = 1, 10000
         dummy = a_lm
         do k = 1, dimsizes(lev)-2   ; omit boundary
             relax1 = dt/(sig(k  )*dlev(k  )*0.5*(lev(k+1)-lev(k-1)))
@@ -165,6 +166,16 @@ begin
         end do    
         err = avg(abs(a_lm - dummy))
         print(err+"")
+
+        ; TODO: Stop criteria
+        ; 1. Absolute error stop < err(1) / 1000.
+        ; 2. derr 
+        rel_err = err / avg(abs(a_lm))
+        if (rel_err .lt. thres) then break end if    
+        ; if (rel_err .lt. 1.e-4) then break end if    
+        if (loop .eq. 10000) then
+            print("Note! Number of iteration over maximum")
+        end if    
     end do 
    
     solution = shseC(a_lm, nlon)

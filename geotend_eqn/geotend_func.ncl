@@ -128,7 +128,7 @@ end if
 ; Forcing 3 : Heating
 J_cp@_FillValue = 0.
 delete(J_cp@_FillValue)
-F3 = (R/P)*((f3^2.)/sig3)*J_cp
+F3 = ((f3^2.)/sig3)*(R/P)*J_cp
 if (vdiff .eq. 1) then  ; Diff in pressure
     F3 = -center_finite_diff_n(F3,  prs, False, 1, 0)
 else  ; Diff in log-P (d/dp -> 1/p*d/dlogp.)
