@@ -22,10 +22,13 @@ function poisson_solver(F[*][*][*]:numeric, opt:logical)
 ;       @dt    = time [s] (emprical value) (default: 1.e9  [s]  )
 ;       @thres = threshold for iteration   (default: 1.e-4      )
 ;       @f0    = Coriolis parameter        (default: 1.e-4 [s-1])
+;       @bound_type  = "N"(neumann),       (default: N)
+;                      "D"(dirichlet)
 ;       @upper_bound = Upper boundary      (default: 0)
 ;       @lower_bound = Lower boundary      (default: 0)
 ;       @radius_earth = Earth radius       (default: 6371220 [m])
 ;
+;  - Note! BC unit must be divieded [Pa] when neumann boundary type used.
 ;  - Laplacian part solve using spherical harmonics.
 ;   (See google drive 
 ;    /project_doc/TODO_Changma/etc/Spheical Harmonics.pdf)
@@ -69,14 +72,15 @@ begin
     top = new((/nlat, nlon/), typeof(F))
     top = 0.
     bot = top
-    
+    bc_type  = "N" ; boundary condition type
+
     if (isatt(opt,    "dt")) then dt    = opt@dt    end if    
     if (isatt(opt, "thres")) then thres = opt@thres end if    
     if (isatt(opt,    "f0")) then f0    = opt@f0    end if    
     if (isatt(opt,   "lev")) then lev   = opt@lev   end if    
     if (isatt(opt, "upper_bound")) then top = opt@upper_bound end if
-    if (isatt(opt, "lower_bound")) then bot = opt@lower_bound end if 
-    if (isatt(opt, "drel_err")) then bot = opt@lower_bound end if 
+    if (isatt(opt, "lower_bound")) then bot = opt@lower_bound end if
+    if (isatt(opt, "bound_type")) then bc_type = opt@bound_type end if 
 
     ; TODO : how to resolve corioli parameter?
     ;   (f_00*Y_00 + f_20*Y_20) * a_lm*Y_lm = c_lm*Y_lm
@@ -104,7 +108,7 @@ begin
         end if  
         print("===== Level  |  Temeprature  |  Sigma =====")
         print(sprintf("%7.0f",lev)+" [Pa] |   "+ \
-              sprintf("%6.2f",T0)+" [K]  | "  + sig +" [m2 Pa-2 s-2]")
+              sprintf("%6.2f", T0)+" [K]  | "  + sig +" [m2 Pa-2 s-2]")
         print("===========================================")
     else    ; TODO: classify "m" and "Pa"
         sig = conform(lev, opt@sig, 0)
@@ -120,14 +124,9 @@ begin
 
     b_lm = shaeC(F)            ; [2] x [lev] x [lat] x [lon]
     a_lm = todouble(b_lm*0.)   ; Because R is double
-    ; Boundary value
-    if (T2B) then   ; True : Top-to-Bottom
-        a_lm(:,     0,:,:) = shaeC(top)
-        a_lm(:,nlev-1,:,:) = shaeC(bot)
-    else
-        a_lm(:,nlev-1,:,:) = shaeC(bot)
-        a_lm(:,     0,:,:) = shaeC(top)
-    end if    
+
+    bc_top = shaeC(top)
+    bc_bot = shaeC(bot)
     
     n    = ispan(0,dimsizes(lat)-1,1)
     nn1  = conform(a_lm(:,0,:,:),n*(n+1),1)  ; [2] x [l] x [m]
@@ -135,6 +134,29 @@ begin
     err = 1.d30
     begTime = get_cpu_time()
     do loop = 1, 10000
+        ; Boundary value
+        if (bc_type .eq. "N") then ; neumann condition
+            if (T2B) then    ; True: Top-to-Bottom
+                a_lm(:,     0,:,:) = a_lm(:,1,:,:)      \
+                                   + bc_top*dlev(0)
+                a_lm(:,nlev-1,:,:) = a_lm(:,nlev-2,:,:) \
+                                   - bc_bot*dlev(nlev-2)
+            else
+                a_lm(:,nlev-1,:,:) = a_lm(:,nlev-2,:,:) \
+                                   + bc_top*dlev(nlev-2)
+                a_lm(:,     0,:,:) = a_lm(:,1,:,:)      \
+                                   - bc_bot*dlev(0)
+            end if    
+        else                       ; dirichlet condition
+            if (T2B) then    ; True: Top-to-Bottom
+                a_lm(:,     0,:,:) = bc_top
+                a_lm(:,nlev-1,:,:) = bc_bot
+            else
+                a_lm(:,nlev-1,:,:) = bc_top
+                a_lm(:,     0,:,:) = bc_bot
+            end if    
+        end if    
+    
         dummy = a_lm
         do k = 1, dimsizes(lev)-2   ; omit boundary
             relax1 = dt/(sig(k  )*dlev(k  )*0.5*(lev(k+1)-lev(k-1)))
