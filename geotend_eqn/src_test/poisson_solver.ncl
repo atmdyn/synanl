@@ -17,16 +17,17 @@ function poisson_solver(F[*][*][*]:numeric, opt:logical)
 ;  - Option
 ;    opt@T0    = T(nprs) or T(nlev)
 ;       @sig   = sig <- constant value
-;       @lev   = vertical coordinate       (default: level from F )
+;       @lev   = vertical coordinate        (default: level from F )
 ;       @lev_units = "hPa", "Pa", "m"
-;       @dt    = time [s] (emprical value) (default: 1.e9  [s]  )
-;       @thres = threshold for iteration   (default: 1.e-4      )
-;       @f0    = Coriolis parameter        (default: 1.e-4 [s-1])
-;       @bound_type  = "N"(neumann),       (default: N)
-;                      "D"(dirichlet)
-;       @upper_bound = Upper boundary      (default: 0)
-;       @lower_bound = Lower boundary      (default: 0)
-;       @radius_earth = Earth radius       (default: 6371220 [m])
+;       @dt    = time [s] (emprical value)  (default: 1.e9  [s]  )
+;       @thres = threshold for iteration    (default: 1.e-4      )
+;       @f0    = Coriolis parameter         (default: 1.e-4 [s-1])
+;       @bc_top_type = Top boundary type    (default: N)
+;       @bc_bot_type = Bottom boundary type (default: N)
+;                      "N"(neumann), "D"(dirichlet)
+;       @upper_bound = Upper boundary       (default: 0)
+;       @lower_bound = Lower boundary       (default: 0)
+;       @radius_earth = Earth radius        (default: 6371220 [m])
 ;
 ;  - Note! BC unit must be divieded [Pa] when neumann boundary type used.
 ;  - Laplacian part solve using spherical harmonics.
@@ -72,7 +73,8 @@ begin
     top = new((/nlat, nlon/), typeof(F))
     top = 0.
     bot = top
-    bc_type  = "N" ; boundary condition type
+    bc_top_type  = "N" ; Top boundary condition type
+    bc_bot_type  = "N" ; Bottom boundary condition type
 
     if (isatt(opt,    "dt")) then dt    = opt@dt    end if    
     if (isatt(opt, "thres")) then thres = opt@thres end if    
@@ -80,7 +82,8 @@ begin
     if (isatt(opt,   "lev")) then lev   = opt@lev   end if    
     if (isatt(opt, "upper_bound")) then top = opt@upper_bound end if
     if (isatt(opt, "lower_bound")) then bot = opt@lower_bound end if
-    if (isatt(opt, "bound_type")) then bc_type = opt@bound_type end if 
+    if (isatt(opt, "bc_top_type")) then bc_top_type = opt@bc_top_type end if 
+    if (isatt(opt, "bc_bot_type")) then bc_bot_type = opt@bc_bot_type end if 
 
     ; TODO : how to resolve corioli parameter?
     ;   (f_00*Y_00 + f_20*Y_20) * a_lm*Y_lm = c_lm*Y_lm
@@ -133,28 +136,36 @@ begin
 
     err = 1.d30
     begTime = get_cpu_time()
+    cond1 = bc_top_type .eq. "N"
+    cond2 = bc_bot_type .eq. "N"
     do loop = 1, 10000
         ; Boundary value
-        if (bc_type .eq. "N") then ; neumann condition
-            if (T2B) then    ; True: Top-to-Bottom
+        if (T2B) then    ; True: Top-to-Bottom
+            if (bc_top_type .eq. "N") then ; neumann condition
                 a_lm(:,     0,:,:) = a_lm(:,1,:,:)      \
                                    + bc_top*dlev(0)
+            else
+                a_lm(:,     0,:,:) = bc_top
+            end if
+            if (bc_bot_type .eq. "N") then ; neumann condition
                 a_lm(:,nlev-1,:,:) = a_lm(:,nlev-2,:,:) \
                                    - bc_bot*dlev(nlev-2)
             else
+                a_lm(:,nlev-1,:,:) = bc_bot
+            end if
+        else ;(B2T) then ; False: Top-to-Bottom
+            if (bc_top_type .eq. "N") then ; neumann condition
                 a_lm(:,nlev-1,:,:) = a_lm(:,nlev-2,:,:) \
                                    + bc_top*dlev(nlev-2)
-                a_lm(:,     0,:,:) = a_lm(:,1,:,:)      \
-                                   - bc_bot*dlev(0)
-            end if    
-        else                       ; dirichlet condition
-            if (T2B) then    ; True: Top-to-Bottom
-                a_lm(:,     0,:,:) = bc_top
-                a_lm(:,nlev-1,:,:) = bc_bot
             else
                 a_lm(:,nlev-1,:,:) = bc_top
+            end if
+            if (bc_bot_type .eq. "N") then ; neumann condition
+                a_lm(:,     0,:,:) = a_lm(:,1,:,:)      \
+                                   - bc_bot*dlev(0)
+            else
                 a_lm(:,     0,:,:) = bc_bot
-            end if    
+            end if
         end if    
     
         dummy = a_lm
