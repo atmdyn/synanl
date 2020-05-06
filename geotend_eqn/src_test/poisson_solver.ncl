@@ -136,8 +136,7 @@ begin
 
     err = 1.d30
     begTime = get_cpu_time()
-    cond1 = bc_top_type .eq. "N"
-    cond2 = bc_bot_type .eq. "N"
+
     do loop = 1, 10000
         ; Boundary value
         if (T2B) then    ; True: Top-to-Bottom
