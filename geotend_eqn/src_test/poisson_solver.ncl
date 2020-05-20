@@ -142,13 +142,13 @@ begin
         if (T2B) then    ; True: Top-to-Bottom
             if (bc_top_type .eq. "N") then ; neumann condition
                 a_lm(:,     0,:,:) = a_lm(:,1,:,:)      \
-                                   + bc_top*dlev(0)
+                                   - bc_top*dlev(0)
             else
                 a_lm(:,     0,:,:) = bc_top
             end if
             if (bc_bot_type .eq. "N") then ; neumann condition
                 a_lm(:,nlev-1,:,:) = a_lm(:,nlev-2,:,:) \
-                                   - bc_bot*dlev(nlev-2)
+                                   + bc_bot*dlev(nlev-2)
             else
                 a_lm(:,nlev-1,:,:) = bc_bot
             end if
