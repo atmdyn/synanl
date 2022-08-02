@@ -6,7 +6,7 @@ url : http://atmdyn.org/
   
 ## Schedule
 - [x] Apparent heating / apparent moisture sink (2020.01.02)
-- [x] ω-equation & Q-vector (2020.07.22 and converted by noel)
+- [x] ω-equation & Q-vector (2020.07.22 and converted by noel) `Need more work`
 - [x] 3D wave activity flux (2022.08.02)
 - [ ] Geopotential tendency equation (2020.04.02) `testing...`
 - [ ] PV inversion (not decide yet)
