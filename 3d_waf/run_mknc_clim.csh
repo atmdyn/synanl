@@ -31,6 +31,11 @@ foreach var ( $vars )
         endif
 
         cdo -f nc copy -chname,${gvar},${vname} -yhouravg -mergetime ${flis} ${odir}/${var}/dummy.nc
+        if ( ${mon} == "02" ) then  # delete 2/29
+            cdo delete,month=2,day=29 ${odir}/${var}/dummy.nc ${odir}/${var}/dummy2.nc
+            rm -f ${odir}/${var}/dummy.nc
+            mv -f ${odir}/${var}/dummy2.nc ${odir}/${var}/dummy.nc
+        endif
         cdo -yhouravg ${odir}/${var}/dummy.nc ${odir}/${var}/${vname}"_1982-2021_"${mon}.nc
         rm -f ${odir}/${var}/dummy.nc
     end
