@@ -6,7 +6,9 @@ set months = ( "01" "02" "03" "04" "05" "06" "07" "08" "09" "10" "11" "12" )
 
 
 # Main
+mkdir -p ${odir}/lndata/
 foreach var ( $vars )
+    mkdir -p ${odir}/${var}/
     if ($var == "Zpl") set gvar  = "var129"
     if ($var == "Zpl") set vname = 'zclm'
     if ($var == "Tpl") set gvar  = "var130"
